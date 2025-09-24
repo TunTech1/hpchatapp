@@ -1,0 +1,362 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_blacklisted_tokens {
+  id         BigInt   @id @default(autoincrement())
+  access     String   @unique
+  expires_at DateTime @db.Timestamptz(6)
+  created_at DateTime @db.Timestamptz(6)
+  user_id    BigInt
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_blacklisted_tokens_user_id_ee2ace48_fk_users_id")
+
+  @@index([access], map: "auth_blacklisted_tokens_access_0d5bcdcf_like")
+  @@index([user_id], map: "auth_blacklisted_tokens_user_id_ee2ace48")
+}
+
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+  users_groups           users_groups[]
+
+  @@index([name], map: "auth_group_name_a6ea08ec_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_group_permissions {
+  id              BigInt          @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([group_id], map: "auth_group_permissions_group_id_b120cbf9")
+  @@index([permission_id], map: "auth_group_permissions_permission_id_84c5c92e")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_permission {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @db.VarChar(255)
+  content_type_id        Int
+  codename               String                   @db.VarChar(100)
+  auth_group_permissions auth_group_permissions[]
+  django_content_type    django_content_type      @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_permission_content_type_id_2f476e4b_fk_django_co")
+  users_user_permissions users_user_permissions[]
+
+  @@unique([content_type_id, codename], map: "auth_permission_content_type_id_codename_01ab375a_uniq")
+  @@index([content_type_id], map: "auth_permission_content_type_id_2f476e4b")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.Timestamptz(6)
+  object_id           String?
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.SmallInt
+  change_message      String
+  content_type_id     Int?
+  user_id             BigInt
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  users               users                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_user_id_c564eba6_fk_users_id")
+
+  @@index([content_type_id], map: "django_admin_log_content_type_id_c4bce8eb")
+  @@index([user_id], map: "django_admin_log_user_id_c564eba6")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], map: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      BigInt   @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.Timestamptz(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String
+  expire_date  DateTime @db.Timestamptz(6)
+
+  @@index([expire_date], map: "django_session_expire_date_a5c62663")
+  @@index([session_key], map: "django_session_session_key_c0390e0f_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model oauth2_provider_accesstoken {
+  id                                                                                                             BigInt                        @id @default(autoincrement())
+  token                                                                                                          String
+  expires                                                                                                        DateTime                      @db.Timestamptz(6)
+  scope                                                                                                          String
+  application_id                                                                                                 BigInt?
+  user_id                                                                                                        BigInt?
+  created                                                                                                        DateTime                      @db.Timestamptz(6)
+  updated                                                                                                        DateTime                      @db.Timestamptz(6)
+  source_refresh_token_id                                                                                        BigInt?                       @unique
+  id_token_id                                                                                                    BigInt?                       @unique
+  token_checksum                                                                                                 String                        @unique(map: "oauth2_provider_accesstoken_token_checksum_85319a26_uniq") @db.VarChar(64)
+  oauth2_provider_application                                                                                    oauth2_provider_application?  @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_acce_application_id_b22886e1_fk_oauth2_pr")
+  oauth2_provider_idtoken                                                                                        oauth2_provider_idtoken?      @relation(fields: [id_token_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_acce_id_token_id_85db651b_fk_oauth2_pr")
+  oauth2_provider_refreshtoken_oauth2_provider_accesstoken_source_refresh_token_idTooauth2_provider_refreshtoken oauth2_provider_refreshtoken? @relation("oauth2_provider_accesstoken_source_refresh_token_idTooauth2_provider_refreshtoken", fields: [source_refresh_token_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_acce_source_refresh_token_e66fbc72_fk_oauth2_pr")
+  users                                                                                                          users?                        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_accesstoken_user_id_6e4c9a65_fk_users_id")
+  oauth2_provider_refreshtoken_oauth2_provider_refreshtoken_access_token_idTooauth2_provider_accesstoken         oauth2_provider_refreshtoken? @relation("oauth2_provider_refreshtoken_access_token_idTooauth2_provider_accesstoken")
+
+  @@index([application_id], map: "oauth2_provider_accesstoken_application_id_b22886e1")
+  @@index([token_checksum], map: "oauth2_provider_accesstoken_token_checksum_85319a26_like")
+  @@index([user_id], map: "oauth2_provider_accesstoken_user_id_6e4c9a65")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model oauth2_provider_application {
+  id                           BigInt                         @id @default(autoincrement())
+  client_id                    String                         @unique @db.VarChar(100)
+  redirect_uris                String
+  client_type                  String                         @db.VarChar(32)
+  authorization_grant_type     String                         @db.VarChar(32)
+  client_secret                String                         @db.VarChar(255)
+  name                         String                         @db.VarChar(255)
+  user_id                      BigInt?
+  skip_authorization           Boolean
+  created                      DateTime                       @db.Timestamptz(6)
+  updated                      DateTime                       @db.Timestamptz(6)
+  algorithm                    String                         @db.VarChar(5)
+  post_logout_redirect_uris    String
+  hash_client_secret           Boolean
+  allowed_origins              String
+  oauth2_provider_accesstoken  oauth2_provider_accesstoken[]
+  users                        users?                         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_application_user_id_79829054_fk_users_id")
+  oauth2_provider_grant        oauth2_provider_grant[]
+  oauth2_provider_idtoken      oauth2_provider_idtoken[]
+  oauth2_provider_refreshtoken oauth2_provider_refreshtoken[]
+
+  @@index([client_id], map: "oauth2_provider_application_client_id_03f0cc84_like")
+  @@index([client_secret], map: "oauth2_provider_application_client_secret_53133678")
+  @@index([client_secret], map: "oauth2_provider_application_client_secret_53133678_like")
+  @@index([user_id], map: "oauth2_provider_application_user_id_79829054")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model oauth2_provider_grant {
+  id                          BigInt                      @id @default(autoincrement())
+  code                        String                      @unique @db.VarChar(255)
+  expires                     DateTime                    @db.Timestamptz(6)
+  redirect_uri                String
+  scope                       String
+  application_id              BigInt
+  user_id                     BigInt
+  created                     DateTime                    @db.Timestamptz(6)
+  updated                     DateTime                    @db.Timestamptz(6)
+  code_challenge              String                      @db.VarChar(128)
+  code_challenge_method       String                      @db.VarChar(10)
+  nonce                       String                      @db.VarChar(255)
+  claims                      String
+  oauth2_provider_application oauth2_provider_application @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_gran_application_id_81923564_fk_oauth2_pr")
+  users                       users                       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_grant_user_id_e8f62af8_fk_users_id")
+
+  @@index([application_id], map: "oauth2_provider_grant_application_id_81923564")
+  @@index([code], map: "oauth2_provider_grant_code_49ab4ddf_like")
+  @@index([user_id], map: "oauth2_provider_grant_user_id_e8f62af8")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model oauth2_provider_idtoken {
+  id                          BigInt                       @id @default(autoincrement())
+  jti                         String                       @unique @db.Uuid
+  expires                     DateTime                     @db.Timestamptz(6)
+  scope                       String
+  created                     DateTime                     @db.Timestamptz(6)
+  updated                     DateTime                     @db.Timestamptz(6)
+  application_id              BigInt?
+  user_id                     BigInt?
+  oauth2_provider_accesstoken oauth2_provider_accesstoken?
+  oauth2_provider_application oauth2_provider_application? @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_idto_application_id_08c5ff4f_fk_oauth2_pr")
+  users                       users?                       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_idtoken_user_id_dd512b59_fk_users_id")
+
+  @@index([application_id], map: "oauth2_provider_idtoken_application_id_08c5ff4f")
+  @@index([user_id], map: "oauth2_provider_idtoken_user_id_dd512b59")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model oauth2_provider_refreshtoken {
+  id                                                                                                            BigInt                       @id @default(autoincrement())
+  token                                                                                                         String                       @db.VarChar(255)
+  access_token_id                                                                                               BigInt?                      @unique
+  application_id                                                                                                BigInt
+  user_id                                                                                                       BigInt
+  created                                                                                                       DateTime                     @db.Timestamptz(6)
+  updated                                                                                                       DateTime                     @db.Timestamptz(6)
+  revoked                                                                                                       DateTime?                    @db.Timestamptz(6)
+  token_family                                                                                                  String?                      @db.Uuid
+  oauth2_provider_accesstoken_oauth2_provider_accesstoken_source_refresh_token_idTooauth2_provider_refreshtoken oauth2_provider_accesstoken? @relation("oauth2_provider_accesstoken_source_refresh_token_idTooauth2_provider_refreshtoken")
+  oauth2_provider_accesstoken_oauth2_provider_refreshtoken_access_token_idTooauth2_provider_accesstoken         oauth2_provider_accesstoken? @relation("oauth2_provider_refreshtoken_access_token_idTooauth2_provider_accesstoken", fields: [access_token_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_refr_access_token_id_775e84e8_fk_oauth2_pr")
+  oauth2_provider_application                                                                                   oauth2_provider_application  @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_refr_application_id_2d1c311b_fk_oauth2_pr")
+  users                                                                                                         users                        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "oauth2_provider_refreshtoken_user_id_da837fce_fk_users_id")
+
+  @@unique([token, revoked], map: "oauth2_provider_refreshtoken_token_revoked_af8a5134_uniq")
+  @@index([application_id], map: "oauth2_provider_refreshtoken_application_id_2d1c311b")
+  @@index([user_id], map: "oauth2_provider_refreshtoken_user_id_da837fce")
+}
+
+model social_auth_association {
+  id         BigInt @id @default(autoincrement())
+  server_url String @db.VarChar(255)
+  handle     String @db.VarChar(255)
+  secret     String @db.VarChar(255)
+  issued     Int
+  lifetime   Int
+  assoc_type String @db.VarChar(64)
+
+  @@unique([server_url, handle], map: "social_auth_association_server_url_handle_078befa2_uniq")
+}
+
+model social_auth_code {
+  id        BigInt   @id @default(autoincrement())
+  email     String   @db.VarChar(254)
+  code      String   @db.VarChar(32)
+  verified  Boolean
+  timestamp DateTime @db.Timestamptz(6)
+
+  @@unique([email, code], map: "social_auth_code_email_code_801b2d02_uniq")
+  @@index([code], map: "social_auth_code_code_a2393167")
+  @@index([code], map: "social_auth_code_code_a2393167_like")
+  @@index([timestamp], map: "social_auth_code_timestamp_176b341f")
+}
+
+model social_auth_nonce {
+  id         BigInt @id @default(autoincrement())
+  server_url String @db.VarChar(255)
+  timestamp  Int
+  salt       String @db.VarChar(65)
+
+  @@unique([server_url, timestamp, salt], map: "social_auth_nonce_server_url_timestamp_salt_f6284463_uniq")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model social_auth_partial {
+  id        BigInt   @id @default(autoincrement())
+  token     String   @db.VarChar(32)
+  next_step Int      @db.SmallInt
+  backend   String   @db.VarChar(32)
+  timestamp DateTime @db.Timestamptz(6)
+  data      Json
+
+  @@index([timestamp], map: "social_auth_partial_timestamp_50f2119f")
+  @@index([token], map: "social_auth_partial_token_3017fea3")
+  @@index([token], map: "social_auth_partial_token_3017fea3_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model social_auth_usersocialauth {
+  id         BigInt   @id @default(autoincrement())
+  provider   String   @db.VarChar(32)
+  uid        String   @db.VarChar(255)
+  user_id    BigInt
+  created    DateTime @db.Timestamptz(6)
+  modified   DateTime @db.Timestamptz(6)
+  extra_data Json
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "social_auth_usersocialauth_user_id_17d28448_fk_users_id")
+
+  @@unique([provider, uid], map: "social_auth_usersocialauth_provider_uid_e6b5e668_uniq")
+  @@index([uid], map: "social_auth_usersocialauth_uid_796e51dc")
+  @@index([uid], map: "social_auth_usersocialauth_uid_796e51dc_like")
+  @@index([user_id], map: "social_auth_usersocialauth_user_id_17d28448")
+}
+
+model User {
+  id        Int   @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  profilePicture String @default("")
+  about     String @default("")
+  sentMessages Messages[] @relation("sentMessages")
+  receivedMessages Messages[] @relation("receivedMessages")
+}
+
+
+model Messages {
+  id          Int      @id @default(autoincrement())
+  sender     User     @relation("sentMessages", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("receivedMessages", fields: [receiverId], references: [id])
+  receiverId Int
+  type      String   @default("text")
+  message String
+  messageStatus String @default("sent")
+  timestamp   DateTime @default(now())
+}
+
+model users {
+  id                           BigInt                         @id @default(autoincrement())
+  password                     String                         @db.VarChar(128)
+  last_login                   DateTime?                      @db.Timestamptz(6)
+  is_superuser                 Boolean
+  first_name                   String                         @db.VarChar(150)
+  last_name                    String                         @db.VarChar(150)
+  is_staff                     Boolean
+  is_active                    Boolean
+  date_joined                  DateTime                       @db.Timestamptz(6)
+  uuid                         String                         @unique @db.Uuid
+  email                        String                         @unique @db.VarChar(254)
+  user_type                    String                         @db.VarChar(16)
+  is_email_verified            Boolean
+  created_at                   DateTime                       @db.Timestamptz(6)
+  updated_at                   DateTime                       @db.Timestamptz(6)
+  phone_number                 String?                        @db.VarChar(20)
+  auth_blacklisted_tokens      auth_blacklisted_tokens[]
+  django_admin_log             django_admin_log[]
+  oauth2_provider_accesstoken  oauth2_provider_accesstoken[]
+  oauth2_provider_application  oauth2_provider_application[]
+  oauth2_provider_grant        oauth2_provider_grant[]
+  oauth2_provider_idtoken      oauth2_provider_idtoken[]
+  oauth2_provider_refreshtoken oauth2_provider_refreshtoken[]
+  social_auth_usersocialauth   social_auth_usersocialauth[]
+  users_groups                 users_groups[]
+  users_user_permissions       users_user_permissions[]
+
+  @@index([email], map: "users_email_0ea73cca_like")
+  @@index([email], map: "users_email_4b85f2_idx")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model users_groups {
+  id         BigInt     @id @default(autoincrement())
+  user_id    BigInt
+  group_id   Int
+  auth_group auth_group @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_groups_group_id_2f3517aa_fk_auth_group_id")
+  users      users      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_groups_user_id_f500bee5_fk_users_id")
+
+  @@unique([user_id, group_id], map: "users_groups_user_id_group_id_fc7788e8_uniq")
+  @@index([group_id], map: "users_groups_group_id_2f3517aa")
+  @@index([user_id], map: "users_groups_user_id_f500bee5")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model users_user_permissions {
+  id              BigInt          @id @default(autoincrement())
+  user_id         BigInt
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_user_permissio_permission_id_6d08dcd2_fk_auth_perm")
+  users           users           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_user_permissions_user_id_92473840_fk_users_id")
+
+  @@unique([user_id, permission_id], map: "users_user_permissions_user_id_permission_id_3b86cbdf_uniq")
+  @@index([permission_id], map: "users_user_permissions_permission_id_6d08dcd2")
+  @@index([user_id], map: "users_user_permissions_user_id_92473840")
+}
